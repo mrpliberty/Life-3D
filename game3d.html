@@ -3,527 +3,308 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game of Life 3D</title>
+<title>Life 3D — 1M Cells</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0a1a;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    overflow: hidden;
-    height: 100vh;
-  }
-  #canvas-container { width: 100%; height: 100vh; }
-  canvas { display: block; }
-
-  #controls {
-    position: fixed;
-    top: 16px;
-    left: 16px;
-    background: rgba(10, 10, 30, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(100, 140, 255, 0.2);
-    border-radius: 12px;
-    padding: 18px 22px;
-    z-index: 100;
-    min-width: 240px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  }
-  #controls h1 {
-    font-size: 18px;
-    margin-bottom: 4px;
-    color: #7eb8ff;
-    letter-spacing: 0.5px;
-  }
-  #controls .subtitle {
-    font-size: 11px;
-    color: #667;
-    margin-bottom: 14px;
-  }
-  .ctrl-group {
-    margin-bottom: 10px;
-  }
-  .ctrl-group label {
-    display: block;
-    font-size: 11px;
-    color: #889;
-    margin-bottom: 3px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  button {
-    background: rgba(80, 120, 255, 0.15);
-    color: #a0c0ff;
-    border: 1px solid rgba(80, 120, 255, 0.3);
-    padding: 7px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-  }
-  button:hover {
-    background: rgba(80, 120, 255, 0.3);
-    border-color: rgba(80, 120, 255, 0.6);
-    color: #c0d8ff;
-  }
-  button.active {
-    background: rgba(80, 200, 120, 0.2);
-    border-color: rgba(80, 200, 120, 0.5);
-    color: #80e0a0;
-  }
-  .btn-row {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  input[type="range"] {
-    width: 100%;
-    accent-color: #5080ff;
-    background: transparent;
-  }
-  #stats {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(100, 140, 255, 0.15);
-    font-size: 12px;
-    color: #778;
-    line-height: 1.6;
-  }
-  #stats span { color: #a0c8ff; font-weight: 600; }
-  #info-panel {
-    position: fixed;
-    bottom: 16px;
-    left: 16px;
-    background: rgba(10, 10, 30, 0.8);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(100, 140, 255, 0.15);
-    border-radius: 10px;
-    padding: 14px 18px;
-    z-index: 100;
-    font-size: 11px;
-    color: #667;
-    max-width: 320px;
-    line-height: 1.5;
-  }
-  #info-panel strong { color: #8899bb; }
-  #rules-panel {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    background: rgba(10, 10, 30, 0.85);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(100, 140, 255, 0.2);
-    border-radius: 12px;
-    padding: 18px 22px;
-    z-index: 100;
-    min-width: 260px;
-    max-width: 340px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    display: none;
-    font-size: 12px;
-    line-height: 1.6;
-    color: #889;
-  }
-  #rules-panel.show { display: block; }
-  #rules-panel h2 {
-    font-size: 15px;
-    color: #7eb8ff;
-    margin-bottom: 8px;
-  }
-  #rules-panel ul { padding-left: 18px; }
-  #rules-panel li { margin-bottom: 4px; }
-  #close-rules {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    background: none;
-    border: none;
-    color: #667;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 0 4px;
-  }
-  #close-rules:hover { color: #aab; }
-  #neighbor-count {
-    font-size: 11px;
-    color: #667;
-    margin-top: 4px;
-  }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; color: #0f0; }
+#canvas-container { width: 100vw; height: 100vh; }
+#ui {
+  position: absolute; top: 10px; left: 10px; z-index: 10;
+  background: rgba(0,0,0,0.85); border: 1px solid #0f0; border-radius: 8px;
+  padding: 12px; font-size: 13px; max-width: 320px;
+}
+#ui h2 { font-size: 16px; margin-bottom: 8px; color: #0f0; text-shadow: 0 0 10px #0f0; }
+#ui button {
+  background: #001a00; color: #0f0; border: 1px solid #0f0; padding: 4px 10px;
+  margin: 2px; cursor: pointer; border-radius: 4px; font-family: inherit; font-size: 12px;
+}
+#ui button:hover { background: #0f0; color: #000; }
+#ui button.active { background: #0f0; color: #000; }
+#stats {
+  position: absolute; top: 10px; right: 10px; z-index: 10;
+  background: rgba(0,0,0,0.85); border: 1px solid #0f0; border-radius: 8px;
+  padding: 12px; font-size: 12px; color: #0f0;
+}
+#rules-panel {
+  position: absolute; bottom: 10px; left: 10px; z-index: 10;
+  background: rgba(0,0,0,0.9); border: 1px solid #0f0; border-radius: 8px;
+  padding: 12px; font-size: 12px; color: #0f0; max-width: 400px; display: none;
+}
+#rules-panel h3 { margin-bottom: 6px; color: #0f0; }
+#rules-panel p { margin: 3px 0; }
+label { display: inline-block; margin: 4px 0; }
+input[type="range"] { width: 120px; vertical-align: middle; }
+#loading {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  color: #0f0; font-size: 24px; text-align: center; z-index: 100;
+  text-shadow: 0 0 20px #0f0;
+}
+#loading .spinner {
+  width: 60px; height: 60px; border: 4px solid #0f0; border-top-color: transparent;
+  border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#seed-btn { width: 100%; margin-top: 6px; }
 </style>
 </head>
 <body>
-
 <div id="canvas-container"></div>
 
-<div id="controls">
-  <h1>Game of Life 3D</h1>
-  <div class="subtitle">John Conway's cellular automaton — cubic grid</div>
-
-  <div class="ctrl-group">
-    <div class="btn-row">
-      <button id="btn-play" onclick="togglePlay()">▶ Play</button>
-      <button onclick="step()">⏭ Step</button>
-      <button onclick="reset()">↺ Reset</button>
-      <button onclick="randomize()">🎲 Random</button>
-    </div>
+<div id="ui">
+  <h2>🧊 Life 3D — 1M Cells</h2>
+  <div>
+    <button id="play-btn">▶ Play</button>
+    <button id="step-btn">⏭ Step</button>
+    <button id="reset-btn">↺ Reset</button>
   </div>
-
-  <div class="ctrl-group">
-    <label>Speed: <span id="speed-val">5</span> gen/sec</label>
-    <input type="range" id="speed" min="1" max="30" value="5" oninput="updateSpeed()">
+  <div>
+    <label>Speed: <input type="range" id="speed" min="1" max="30" value="5"></label>
+    <span id="speed-val">5</span> gen/s
   </div>
-
-  <div class="ctrl-group">
-    <label>Grid: <span id="grid-label">5 × 5 × 4</span> (<span id="total-cells">100</span> cells)</label>
-    <div class="btn-row" style="margin-top:4px">
-      <button onclick="setGrid(4,4,4)">4³</button>
-      <button onclick="setGrid(5,5,4)">5×5×4</button>
-      <button onclick="setGrid(5,5,5)">5³</button>
-      <button onclick="setGrid(6,6,4)">6×6×4</button>
-    </div>
+  <div>
+    <button id="grid-btn" class="active">100³ Grid</button>
   </div>
-
-  <div class="ctrl-group">
-    <label>Ruleset</label>
-    <div class="btn-row">
-      <button id="btn-rules34" class="active" onclick="setRuleset(3,4)">3-4 (3D)</button>
-      <button id="btn-rules26" onclick="setRuleset(26)">26-Neighbor</button>
-    </div>
-    <div id="neighbor-count">Survive: 2–3 &nbsp;|&nbsp; Born: 3</div>
+  <div>
+    <button id="rules-btn">Show Rules</button>
+    <button id="wireframe-btn">Wireframe: OFF</button>
+    <button id="glow-btn">Glow: ON</button>
   </div>
-
-  <div class="ctrl-group">
-    <div class="btn-row">
-      <button onclick="toggleRules()">📖 Rules</button>
-      <button onclick="toggleWireframe()">◇ Wireframe</button>
-      <button onclick="toggleGlow()">✦ Glow</button>
-    </div>
+  <div>
+    <button id="seed-btn">🎲 Random Seed (30%)</button>
   </div>
-
-  <div id="stats">
-    Generation: <span id="gen-count">0</span><br>
-    Alive cells: <span id="alive-count">0</span> / <span id="total-count">100</span><br>
-    Density: <span id="density">0%</span>
+  <div style="margin-top:8px; font-size:11px; color:#0a0;">
+    Click cells to toggle | Drag to rotate | Scroll to zoom
   </div>
+</div>
+
+<div id="stats">
+  <div>Generation: <span id="gen-count">0</span></div>
+  <div>Alive: <span id="alive-count">0</span></div>
+  <div>FPS: <span id="fps">0</span></div>
+  <div>Grid: 100³ = 1,000,000</div>
 </div>
 
 <div id="rules-panel">
-  <button id="close-rules" onclick="toggleRules()">×</button>
-  <h2>3D Game of Life Rules</h2>
-  <p><strong>Grid:</strong> 3D cubic lattice. Each cell has 26 neighbors (the surrounding 3×3×3 cube minus itself).</p>
-  <p><strong>Classic 3D Ruleset (B3/S23):</strong></p>
-  <ul>
-    <li><strong>Birth:</strong> A dead cell with exactly <strong>3</strong> live neighbors becomes alive.</li>
-    <li><strong>Survival:</strong> A live cell with <strong>2 or 3</strong> live neighbors survives.</li>
-    <li><strong>Death:</strong> All other live cells die (underpopulation or overpopulation).</li>
-  </ul>
-  <p><strong>Extended Ruleset (B0-26):</strong></p>
-  <ul>
-    <li>Any cell with any number of neighbors can survive/born (chaotic mode).</li>
-  </ul>
-  <p style="margin-top:10px; color:#556;"><strong>Interaction:</strong></p>
-  <ul>
-    <li><strong>Click</strong> a cube to toggle it</li>
-    <li><strong>Drag</strong> to orbit camera</li>
-    <li><strong>Scroll</strong> to zoom</li>
-    <li><strong>Right-drag</strong> to pan</li>
-  </ul>
+  <h3>3D Conway Rules</h3>
+  <p><strong>Grid:</strong> 100 × 100 × 100 = 1,000,000 cells</p>
+  <p><strong>Neighbors:</strong> 26 per cell (3×3×3 cube − center)</p>
+  <p><strong>Topology:</strong> Toroidal (wraparound on all faces)</p>
+  <hr style="border-color:#0a0; margin:6px 0;">
+  <p><strong>Birth:</strong> Dead cell with exactly 3 live neighbors → alive</p>
+  <p><strong>Survive:</strong> Live cell with 2, 3, 4, or 5 live neighbors → stays alive</p>
+  <p><strong>Die:</strong> All other cases</p>
+  <hr style="border-color:#0a0; margin:6px 0;">
+  <p><strong>Why 3D?</strong></p>
+  <p>• More neighbors (26 vs 8) changes balance</p>
+  <p>• Patterns move in 3 spatial dimensions</p>
+  <p>• Higher interaction density → different emergent behavior</p>
+  <p><strong>Complexity:</strong> O(n³) per generation</p>
+  <p>• 100³ = 1M cells × 26 neighbors = 26M checks/gen</p>
 </div>
 
-<div id="info-panel">
-  <strong>Controls:</strong> Click cubes to toggle &nbsp;|&nbsp; Drag to rotate &nbsp;|&nbsp; Scroll to zoom &nbsp;|&nbsp; Right-drag to pan
+<div id="loading">
+  <div class="spinner"></div>
+  Initializing 1,000,000 cells...
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-// ==================== CONFIG ====================
-let GRID = { x: 5, y: 5, z: 4 }; // 5×5×4 = 100 cubic cells
-let grid = [];
-let nextGrid = [];
+// ===== CONFIG =====
+const GRID = 100; // 100x100x100 = 1,000,000 cells
+const CELL_SIZE = 0.95; // slightly smaller than 1 to show grid lines
+const BORN = [3];
+const SURVIVE = [2, 3, 4, 5];
+const RANDOM_DENSITY = 0.30;
+
+// ===== STATE =====
+let grid = new Uint8Array(GRID * GRID * GRID);
+let nextGrid = new Uint8Array(GRID * GRID * GRID);
 let generation = 0;
 let playing = false;
 let speed = 5;
-let surviveCount = [2, 3]; // survive with 2 or 3 neighbors
-let bornCount = 3; // born with exactly 3 neighbors
-let rulesetMode = 'classic'; // 'classic' or 'extended'
-let wireframeMode = false;
-let glowMode = true;
-let totalCells = GRID.x * GRID.y * GRID.z;
+let wireframe = false;
+let glowEnabled = true;
+let lastTime = 0;
+let frameCount = 0;
+let fpsTime = 0;
 
-// ==================== THREE.JS SETUP ====================
-const container = document.getElementById('canvas-container');
+// ===== THREE.JS SETUP =====
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a1a);
-scene.fog = new THREE.FogExp2(0x0a0a1a, 0.025);
+scene.background = new THREE.Color(0x000000);
 
-const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(12, 10, 14);
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(GRID * 1.2, GRID * 1.2, GRID * 1.2);
+camera.lookAt(GRID / 2, GRID / 2, GRID / 2);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-container.appendChild(renderer.domElement);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.target.set(GRID.x/2, GRID.y/2, GRID.z/2);
+controls.target.set(GRID / 2, GRID / 2, GRID / 2);
+controls.update();
 
 // Lighting
-const ambientLight = new THREE.AmbientLight(0x334466, 0.6);
+const ambientLight = new THREE.AmbientLight(0x222222);
 scene.add(ambientLight);
 
 const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-dirLight.position.set(10, 15, 10);
+dirLight.position.set(50, 50, 50);
 scene.add(dirLight);
 
-const dirLight2 = new THREE.DirectionalLight(0x4466aa, 0.3);
-dirLight2.position.set(-10, -5, -10);
-scene.add(dirLight2);
-
-const pointLight = new THREE.PointLight(0x5588ff, 0.4, 50);
-pointLight.position.set(GRID.x/2, GRID.y/2, GRID.z/2 + 10);
+const pointLight = new THREE.PointLight(0x00ff00, 0.5, 200);
+pointLight.position.set(GRID / 2, GRID / 2, GRID / 2);
 scene.add(pointLight);
 
-// ==================== GRID & CELLS ====================
-const cellSize = 0.75;
-const gap = 0.1;
-const cubeGeo = new THREE.BoxGeometry(cellSize, cellSize, cellSize);
-const edgeGeo = new THREE.EdgesGeometry(cubeGeo);
-let cellMeshes = [];
-let edgeMeshes = [];
-let glowMeshes = [];
+// ===== GRID VISUALIZATION =====
+// For 1M cells we use instanced mesh for performance
+const geometry = new THREE.BoxGeometry(CELL_SIZE, CELL_SIZE, CELL_SIZE);
+const material = new THREE.MeshPhongMaterial({
+  color: 0x00ff00,
+  emissive: glowEnabled ? 0x003300 : 0x000000,
+  specular: 0x44ff44,
+  shininess: 30,
+  transparent: true,
+  opacity: 0.9
+});
 
-function initGrid() {
-  // Remove old meshes
-  cellMeshes.forEach(m => scene.remove(m));
-  edgeMeshes.forEach(m => scene.remove(m));
-  glowMeshes.forEach(m => scene.remove(m));
-  cellMeshes = [];
-  edgeMeshes = [];
-  glowMeshes = [];
+const instancedMesh = new THREE.InstancedMesh(geometry, material, GRID * GRID * GRID);
+instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+scene.add(instancedMesh);
 
-  const offsetX = -GRID.x / 2 + 0.5;
-  const offsetY = -GRID.y / 2 + 0.5;
-  const offsetZ = -GRID.z / 2 + 0.5;
+// Wireframe grid helper
+const gridHelper = new THREE.GridHelper(GRID, GRID, 0x003300, 0x001100);
+gridHelper.position.set(GRID / 2 - 0.5, -0.5, GRID / 2 - 0.5);
+scene.add(gridHelper);
 
-  grid = [];
-  nextGrid = [];
+// Edge wireframe box
+const edgeGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(GRID, GRID, GRID));
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x004400, transparent: true, opacity: 0.3 });
+const edgeLines = new THREE.LineSegments(edgeGeo, edgeMat);
+edgeLines.position.set(GRID / 2 - 0.5, GRID / 2 - 0.5, GRID / 2 - 0.5);
+scene.add(edgeLines);
 
-  for (let x = 0; x < GRID.x; x++) {
-    grid[x] = [];
-    nextGrid[x] = [];
-    for (let y = 0; y < GRID.y; y++) {
-      grid[x][y] = [];
-      nextGrid[x][y] = [];
-      for (let z = 0; z < GRID.z; z++) {
-        grid[x][y][z] = 0;
-        nextGrid[x][y][z] = 0;
-
-        // Live cell mesh
-        const mat = new THREE.MeshPhongMaterial({
-          color: 0x4488ff,
-          emissive: 0x112244,
-          transparent: true,
-          opacity: 0.9,
-          shininess: 80
-        });
-        const mesh = new THREE.Mesh(cubeGeo, mat);
-        mesh.position.set(
-          x + offsetX,
-          y + offsetY,
-          z + offsetZ
-        );
-        mesh.scale.setScalar(0);
-        mesh.userData = { x, y, z, targetScale: 0, alive: false };
-        scene.add(mesh);
-        cellMeshes.push(mesh);
-
-        // Edge wireframe
-        const edgeMat = new THREE.LineBasicMaterial({
-          color: 0x6699ff,
-          transparent: true,
-          opacity: 0.4
-        });
-        const edgeMesh = new THREE.LineSegments(edgeGeo, edgeMat);
-        edgeMesh.position.copy(mesh.position);
-        edgeMesh.scale.setScalar(0);
-        scene.add(edgeMesh);
-        edgeMeshes.push(edgeMesh);
-
-        // Glow (larger, transparent)
-        const glowMat = new THREE.MeshBasicMaterial({
-          color: 0x4488ff,
-          transparent: true,
-          opacity: 0.08,
-          side: THREE.BackSide
-        });
-        const glowMesh = new THREE.Mesh(new THREE.BoxGeometry(cellSize * 1.8, cellSize * 1.8, cellSize * 1.8), glowMat);
-        glowMesh.position.copy(mesh.position);
-        glowMesh.scale.setScalar(0);
-        scene.add(glowMesh);
-        glowMeshes.push(glowMesh);
-      }
-    }
-  }
-
-  updateStats();
-  updateGridLabel();
+// ===== HELPERS =====
+function idx(x, y, z) {
+  return ((z % GRID + GRID) % GRID) * GRID * GRID +
+         ((y % GRID + GRID) % GRID) * GRID +
+         ((x % GRID + GRID) % GRID);
 }
 
-function updateCellVisuals() {
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        const idx = ((x * GRID.y + y) * GRID.z + z);
-        const alive = grid[x][y][z];
-        const mesh = cellMeshes[idx];
-        const edge = edgeMeshes[idx];
-        const glow = glowMeshes[idx];
-
-        mesh.userData.alive = alive;
-        mesh.userData.targetScale = alive ? 1.0 : 0.0;
-
-        if (alive) {
-          const hue = (x * GRID.y + y * GRID.z + z * GRID.x) / totalCells;
-          const color = new THREE.Color().setHSL(0.6 - hue * 0.15, 0.8, 0.55);
-          mesh.material.color.copy(color);
-          mesh.material.emissive.setHSL(0.6 - hue * 0.15, 0.9, 0.15);
-          edge.material.color.copy(color);
-          edge.material.opacity = 0.6;
-          glow.material.color.copy(color);
-          glow.visible = glowMode;
-        } else {
-          mesh.material.color.set(0x1a1a2e);
-          mesh.material.emissive.set(0x0a0a15);
-          edge.material.color.set(0x222244);
-          edge.material.opacity = 0.2;
-          glow.visible = false;
-        }
-      }
-    }
-  }
-}
-
-// ==================== GAME OF LIFE LOGIC ====================
 function countNeighbors(x, y, z) {
   let count = 0;
-  for (let dx = -1; dx <= 1; dx++) {
+  for (let dz = -1; dz <= 1; dz++) {
     for (let dy = -1; dy <= 1; dy++) {
-      for (let dz = -1; dz <= 1; dz++) {
+      for (let dx = -1; dx <= 1; dx++) {
         if (dx === 0 && dy === 0 && dz === 0) continue;
-        const nx = x + dx, ny = y + dy, nz = z + dz;
-        if (nx >= 0 && nx < GRID.x && ny >= 0 && ny < GRID.y && nz >= 0 && nz < GRID.z) {
-          count += grid[nx][ny][nz];
-        }
+        count += grid[idx(x + dx, y + dy, z + dz)];
       }
     }
   }
   return count;
 }
 
-function step() {
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        const n = countNeighbors(x, y, z);
-        if (rulesetMode === 'classic') {
-          if (grid[x][y][z]) {
-            nextGrid[x][y][z] = (n === surviveCount[0] || n === surviveCount[1]) ? 1 : 0;
-          } else {
-            nextGrid[x][y][z] = (n === bornCount) ? 1 : 0;
-          }
-        } else {
-          // Extended: any neighbor count can lead to life or death
-          nextGrid[x][y][z] = 1;
+function updateInstances() {
+  const dummy = new THREE.Object3D();
+  let aliveCount = 0;
+
+  for (let z = 0; z < GRID; z++) {
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        const i = idx(x, y, z);
+        if (grid[i]) {
+          dummy.position.set(x, y, z);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          instancedMesh.setMatrixAt(aliveCount, dummy.matrix);
+          aliveCount++;
         }
       }
     }
   }
-  // Swap grids
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        grid[x][y][z] = nextGrid[x][y][z];
+
+  instancedMesh.count = aliveCount;
+  instancedMesh.instanceMatrix.needsUpdate = true;
+
+  // Color variation by Z depth
+  for (let i = 0; i < aliveCount; i++) {
+    const z = Math.floor(i / (GRID * GRID)) * (GRID / GRID);
+    instancedMesh.setColorAt(i, new THREE.Color(0x00, 0xff, 0x00));
+  }
+  instancedMesh.instanceColor.needsUpdate = true;
+
+  document.getElementById('alive-count').textContent = aliveCount.toLocaleString();
+  return aliveCount;
+}
+
+// ===== SIMULATION =====
+function step() {
+  let aliveCount = 0;
+  for (let z = 0; z < GRID; z++) {
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        const i = idx(x, y, z);
+        const n = countNeighbors(x, y, z);
+        nextGrid[i] = grid[i]
+          ? (SURVIVE.includes(n) ? 1 : 0)
+          : (BORN.includes(n) ? 1 : 0);
       }
     }
+  }
+
+  // Swap grids
+  for (let i = 0; i < grid.length; i++) {
+    grid[i] = nextGrid[i];
   }
   generation++;
-  updateCellVisuals();
-  updateStats();
+  document.getElementById('gen-count').textContent = generation.toLocaleString();
 }
 
-function randomize() {
-  generation = 0;
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        grid[x][y][z] = Math.random() < 0.35 ? 1 : 0;
-      }
-    }
-  }
-  updateCellVisuals();
-  updateStats();
-}
-
-function reset() {
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        grid[x][y][z] = 0;
-      }
-    }
-  }
-  generation = 0;
-  updateCellVisuals();
-  updateStats();
-}
-
-// ==================== ANIMATION ====================
-let lastTime = 0;
-let accumulator = 0;
-let intervalMs = 200;
-
+// ===== RENDERING =====
 function animate(time) {
   requestAnimationFrame(animate);
 
-  // Scale animation for cells
-  for (let i = 0; i < cellMeshes.length; i++) {
-    const mesh = cellMeshes[i];
-    const target = mesh.userData.targetScale;
-    const current = mesh.scale.x;
-    const diff = target - current;
-    if (Math.abs(diff) > 0.001) {
-      mesh.scale.setScalar(current + diff * 0.15);
-      edgeMeshes[i].scale.copy(mesh.scale);
-      if (glowMeshes[i].visible) {
-        glowMeshes[i].scale.setScalar(mesh.scale.x * 1.8);
-      }
+  // FPS counter
+  frameCount++;
+  if (time - fpsTime >= 1000) {
+    document.getElementById('fps').textContent = frameCount;
+    frameCount = 0;
+    fpsTime = time;
+  }
+
+  // Tick rate control
+  if (playing) {
+    const interval = 1000 / speed;
+    if (time - lastTime >= interval) {
+      step();
+      updateInstances();
+      lastTime = time;
     }
+  }
+
+  // Subtle glow pulse
+  if (glowEnabled) {
+    const pulse = 0.02 + Math.sin(time * 0.002) * 0.01;
+    material.emissive.setHex(pulse * 0xff0000 + pulse * 0x100000);
   }
 
   controls.update();
   renderer.render(scene, camera);
 }
 
-function gameLoop(timestamp) {
-  if (!lastTime) lastTime = timestamp;
-  const delta = timestamp - lastTime;
-  lastTime = timestamp;
-
-  if (playing) {
-    accumulator += delta;
-    if (accumulator >= intervalMs) {
-      step();
-      accumulator -= intervalMs;
-    }
+// ===== RANDOM SEED =====
+function randomSeed(density) {
+  for (let i = 0; i < grid.length; i++) {
+    grid[i] = Math.random() < density ? 1 : 0;
   }
-
-  requestAnimationFrame(gameLoop);
+  generation = 0;
+  document.getElementById('gen-count').textContent = '0';
+  updateInstances();
 }
 
-// ==================== RAYCASTING (CLICK) ====================
+// ===== CELL INTERACTION (raycasting) =====
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
@@ -532,115 +313,93 @@ renderer.domElement.addEventListener('click', (event) => {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(cellMeshes);
 
-  if (intersects.length > 0) {
-    const idx = cellMeshes.indexOf(intersects[0].object);
-    const { x, y, z } = cellMeshes[idx].userData;
-    grid[x][y][z] = grid[x][y][z] ? 0 : 1;
-    updateCellVisuals();
-    updateStats();
+  // Create a small probe box to find which cell was clicked
+  const gridSize = 1.5;
+  const probeGeo = new THREE.BoxGeometry(gridSize, gridSize, gridSize);
+  const probeMat = new THREE.MeshBasicMaterial({ visible: false });
+  const probe = new THREE.Mesh(probeGeo, probeMat);
+  probe.position.copy(raycaster.ray.origin).add(raycaster.ray.direction.clone().multiplyScalar(20));
+
+  // Find the closest cell to the ray
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -10);
+  const target = new THREE.Vector3();
+  raycaster.ray.intersectPlane(plane, target);
+
+  if (target) {
+    const gx = Math.floor(target.x);
+    const gy = Math.floor(target.y);
+    const gz = Math.floor(target.z);
+
+    if (gx >= 0 && gx < GRID && gy >= 0 && gy < GRID && gz >= 0 && gz < GRID) {
+      const i = idx(gx, gy, gz);
+      grid[i] = grid[i] ? 0 : 1;
+      updateInstances();
+    }
   }
 });
 
-// ==================== UI FUNCTIONS ====================
-function togglePlay() {
+// ===== UI =====
+document.getElementById('play-btn').addEventListener('click', () => {
   playing = !playing;
-  const btn = document.getElementById('btn-play');
-  btn.textContent = playing ? '⏸ Pause' : '▶ Play';
-  btn.classList.toggle('active', playing);
-}
+  document.getElementById('play-btn').textContent = playing ? '⏸ Pause' : '▶ Play';
+  document.getElementById('play-btn').classList.toggle('active', playing);
+});
 
-function step() {
+document.getElementById('step-btn').addEventListener('click', () => {
   playing = false;
-  document.getElementById('btn-play').textContent = '▶ Play';
-  document.getElementById('btn-play').classList.remove('active');
+  document.getElementById('play-btn').textContent = '▶ Play';
+  document.getElementById('play-btn').classList.remove('active');
   step();
-}
+  updateInstances();
+});
 
-function updateSpeed() {
-  const val = document.getElementById('speed').value;
-  speed = parseInt(val);
-  intervalMs = 1000 / speed;
-  document.getElementById('speed-val').textContent = val;
-}
+document.getElementById('reset-btn').addEventListener('click', () => {
+  randomSeed(0.3);
+});
 
-function setGrid(x, y, z) {
-  GRID = { x, y, z };
-  totalCells = GRID.x * GRID.y * GRID.z;
-  playing = false;
-  document.getElementById('btn-play').textContent = '▶ Play';
-  document.getElementById('btn-play').classList.remove('active');
-  initGrid();
-  randomize();
-}
+document.getElementById('speed').addEventListener('input', (e) => {
+  speed = parseInt(e.target.value);
+  document.getElementById('speed-val').textContent = speed;
+});
 
-function setRuleset(born, ...survive) {
-  if (survive.length > 0) {
-    rulesetMode = 'classic';
-    bornCount = born;
-    surviveCount = survive;
-    document.getElementById('btn-rules34').classList.add('active');
-    document.getElementById('btn-rules26').classList.remove('active');
-    document.getElementById('neighbor-count').textContent =
-      `Survive: ${survive.join(', ')} | Born: ${born}`;
-  } else {
-    rulesetMode = 'extended';
-    document.getElementById('btn-rules26').classList.add('active');
-    document.getElementById('btn-rules34').classList.remove('active');
-    document.getElementById('neighbor-count').textContent = 'All neighbor counts (chaotic mode)';
-  }
-}
+document.getElementById('rules-btn').addEventListener('click', () => {
+  const panel = document.getElementById('rules-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+});
 
-function toggleRules() {
-  document.getElementById('rules-panel').classList.toggle('show');
-}
+document.getElementById('wireframe-btn').addEventListener('click', () => {
+  wireframe = !wireframe;
+  material.wireframe = wireframe;
+  document.getElementById('wireframe-btn').textContent = `Wireframe: ${wireframe ? 'ON' : 'OFF'}`;
+});
 
-function toggleWireframe() {
-  wireframeMode = !wireframeMode;
-  for (const mesh of cellMeshes) {
-    mesh.material.wireframe = wireframeMode;
-  }
-}
+document.getElementById('glow-btn').addEventListener('click', () => {
+  glowEnabled = !glowEnabled;
+  document.getElementById('glow-btn').textContent = `Glow: ${glowEnabled ? 'ON' : 'OFF'}`;
+});
 
-function toggleGlow() {
-  glowMode = !glowMode;
-  updateCellVisuals();
-}
+document.getElementById('seed-btn').addEventListener('click', () => {
+  randomSeed(0.3);
+});
 
-function updateStats() {
-  let alive = 0;
-  for (let x = 0; x < GRID.x; x++) {
-    for (let y = 0; y < GRID.y; y++) {
-      for (let z = 0; z < GRID.z; z++) {
-        alive += grid[x][y][z];
-      }
-    }
-  }
-  document.getElementById('gen-count').textContent = generation;
-  document.getElementById('alive-count').textContent = alive;
-  document.getElementById('total-count').textContent = totalCells;
-  document.getElementById('density').textContent = ((alive / totalCells) * 100).toFixed(1) + '%';
-}
-
-function updateGridLabel() {
-  const g = GRID;
-  document.getElementById('grid-label').textContent = `${g.x} × ${g.y} × ${g.z}`;
-  document.getElementById('total-cells').textContent = totalCells;
-}
-
-// ==================== RESIZE ====================
+// ===== RESIZE =====
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ==================== INIT ====================
-initGrid();
-randomize();
-animate();
-requestAnimationFrame(gameLoop);
+// ===== INIT =====
+function init() {
+  randomSeed(RANDOM_DENSITY);
+  updateInstances();
+  document.getElementById('loading').style.display = 'none';
+  animate(0);
+}
+
+// Delay init to allow DOM to render
+setTimeout(init, 100);
 </script>
 </body>
 </html>
